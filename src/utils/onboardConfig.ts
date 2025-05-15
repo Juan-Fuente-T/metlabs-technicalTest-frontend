@@ -7,11 +7,12 @@ const injected = injectedModule();
 
 // Public node RPC URL. solo para la prueba
 // const RPC_URL_SEPOLIA = 'https://ethereum-sepolia-rpc.publicnode.com'; 
-const RPC_URL_SEPOLIA = 'https://1rpc.io/sepolia'; 
+const RPC_URL_SEPOLIA = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || 'https://1rpc.io/sepolia'; 
 
-if (!RPC_URL_SEPOLIA || RPC_URL_SEPOLIA === 'https://1rpc.io/sepolia') {
+// Condición corregida para la advertencia
+if (!RPC_URL_SEPOLIA || RPC_URL_SEPOLIA.trim() === '') {
   console.warn(
-    "Advertencia: RPC_URL_SEPOLIA no está configurada en onboardConfig.ts. La conexión de wallet podría no funcionar correctamente para interactuar con la red Sepolia."
+    `Advertencia: RPC_URL_SEPOLIA parece no estar configurada correctamente (actual: ${RPC_URL_SEPOLIA}). La conexión de wallet podría no funcionar bien con la red Sepolia.`
   );
 }
 
