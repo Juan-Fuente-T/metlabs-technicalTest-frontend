@@ -5,11 +5,11 @@ import injectedModule from '@web3-onboard/injected-wallets';
 // Módulo para wallets inyectadas (MetaMask, etc.)
 const injected = injectedModule();
 
-
 // Public node RPC URL. solo para la prueba
-const RPC_URL_SEPOLIA = 'https://ethereum-sepolia-rpc.publicnode.com'; 
+// const RPC_URL_SEPOLIA = 'https://ethereum-sepolia-rpc.publicnode.com'; 
+const RPC_URL_SEPOLIA = 'https://1rpc.io/sepolia'; 
 
-if (!RPC_URL_SEPOLIA || RPC_URL_SEPOLIA === 'https://ethereum-sepolia-rpc.publicnode.com') {
+if (!RPC_URL_SEPOLIA || RPC_URL_SEPOLIA === 'https://1rpc.io/sepolia') {
   console.warn(
     "Advertencia: RPC_URL_SEPOLIA no está configurada en onboardConfig.ts. La conexión de wallet podría no funcionar correctamente para interactuar con la red Sepolia."
   );

@@ -28,7 +28,6 @@ export default function LoginPage() {
     event.preventDefault(); // Previene el comportamiento por defecto del formulario
     setMessage('');
 
-
     try {
       const responseData = await apiService.auth.register({ email, password });
       toast.success('Registro exitoso');
@@ -42,6 +41,24 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error('Error en la petición de registro:', error);
       setMessage(error.message || 'Error de conexión o del servidor al intentar registrar.');
+    }
+  };
+
+  const handleLogin = async () => {
+    
+    try {
+      const responseData = await apiService.auth.login({ email, password });
+      toast.success('Login exitoso');
+      setMessage(`Usuario logueado con éxito: ${responseData.user?.email || ''} (ID: ${responseData.user?.id || ''})`);
+      setTimeout(() => {
+        router.push('/profile');
+      }, 3000); // Redirigir despues de 3 segundos
+      setEmail('');
+      setPassword('');
+      // localStorage.setItem('token', responseData.token);
+    } catch (error: any) {
+      console.error('Error en la petición de login:', error);
+      setMessage(error.message || 'Error de conexión o del servidor al intentar iniciar sesión.');
     }
   };
 
@@ -75,7 +92,13 @@ export default function LoginPage() {
           className='border border-solid border-black'
           type="submit"
         >
-          Registrarme
+          Register
+        </button>
+        <button
+          className='border border-solid border-black'
+          type="submit"
+        >
+          Login
         </button>
       </form>
       {message && <p>{message}</p>}
