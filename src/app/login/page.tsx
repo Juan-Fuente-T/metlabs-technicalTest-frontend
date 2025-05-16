@@ -53,7 +53,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     console.log("Iniciando sesión con email:", email, "y password:", password);
     try {
       const responseData = await apiService.auth.login({ email, password });

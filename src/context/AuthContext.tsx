@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import '@/utils/onboardConfig'; 
 
 interface AuthUser { 
   id: string;
@@ -29,6 +30,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (storedToken) {
       setToken(storedToken);
+      // Se podría decodificar el token para obtener info básica del user,
+      // o hacer una llamada a /api/users/me para validar el token y obtener datos frescos.
+      // const storedUserData = localStorage.getItem('authUser');
+      // if (storedUserData) setUser(JSON.parse(storedUserData));
      }
     setIsLoading(false); 
   }, []);
@@ -41,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // localStorage.setItem('authUser', JSON.stringify(userData)); // Opcional
       setUser(userData);
     }
-    // Se podría querer cargar los datos del usuario desde el backend aquí usando el token
+    // Se podrían cargar los datos del usuario desde el backend aquí usando el token
   };
 
   const logout = () => {

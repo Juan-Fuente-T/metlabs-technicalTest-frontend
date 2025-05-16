@@ -7,6 +7,7 @@ interface RegisterPayload {
 interface UserResponseData { // Lo que devuelve el backend para un usuario
     id: string;
     email: string;
+    walletAddress?: string; //Opcional
 }
 interface RegisterResponse { // Respuesta del endpoint registro
     message: string;
@@ -23,7 +24,8 @@ interface LoginResponse {
 interface TransactionPayload {
     transactionHash: string;
     userAddress: string;
-    type: string;
+    // type: string;
+    type: 'deposit' | 'withdraw';
 }
 interface TransactionData { // Lo que devuelve el backend para una transacción
     id: string;
@@ -39,11 +41,24 @@ interface AddTransactionResponse {
 
 
 interface UserProfileData extends UserResponseData {
-  id: string;
-  email: string;
-  walletAddress?: string; 
     // otros campos del perfil que devuelva el backend
 }
+
+// --- FUNCIÓN PARA OBTENER CABECERAS CON AUTENTICACIÓN ---
+const getAuthHeaders = () => {
+    const headers: HeadersInit = { // HeadersInit es un tipo de TypeScript para las cabeceras
+      'Content-Type': 'application/json',
+    };
+    // Verifica que está en el navegador antes de acceder a localStorage
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      console.log('[apiService] Token recuperado de localStorage:', token); 
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    return headers;
+  };
 
 export const apiService = {
     auth: {
@@ -91,9 +106,7 @@ export const apiService = {
             try {
                 const res = await fetch(`${API_BASE_URL}/api/transactions`, { 
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(payload),
                 });
                 const data = await res.json();
@@ -113,10 +126,7 @@ export const apiService = {
             try {
                 const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, { 
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`, // TRAS IMPLEMENTAR JWT
-                    },
+                    headers: getAuthHeaders(),
                 });
                 const data = await res.json();
                 if (!res.ok) {
