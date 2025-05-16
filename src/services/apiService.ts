@@ -10,23 +10,26 @@ interface UserResponseData { // Lo que devuelve el backend para un usuario
 }
 interface RegisterResponse { // Respuesta del endpoint registro
     message: string;
+    token: string;
     user: UserResponseData;
 }
 
 interface LoginResponse {
     message: string;
+    token: string;
     user: UserResponseData;
-    // token?: string; // Si hay token JWT, REVISAR
 }
 
 interface TransactionPayload {
     transactionHash: string;
     userAddress: string;
+    type: string;
 }
 interface TransactionData { // Lo que devuelve el backend para una transacción
     id: string;
     transactionHash: string;
     userAddress: string;
+    type: string;
     createdAt: string;
 }
 interface AddTransactionResponse {
@@ -95,7 +98,7 @@ export const apiService = {
                 });
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.message || `Error ${res.status}: Error al añadir transacción`);
+                    throw new Error(data.message || `Error ${res.status}: Error al añadir la transacción`);
                 }
                 return data;
             } catch (error) {
@@ -126,5 +129,4 @@ export const apiService = {
             }
         }
     }
-    // ... más namespaces y métodos según necesites ...
 };

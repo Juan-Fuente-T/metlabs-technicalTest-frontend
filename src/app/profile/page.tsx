@@ -125,7 +125,8 @@ export default function ProfilePage() {
           }
           await apiService.transactions.add({ 
             transactionHash: tx.hash, 
-            userAddress:signerAddress
+            userAddress:signerAddress,
+            type: 'deposit'
           });
           toast.success('Hash de la transacción guardado en el backend.');
         } catch (backendError) {
@@ -167,7 +168,8 @@ export default function ProfilePage() {
           }
           await apiService.transactions.add({ 
             transactionHash: tx.hash, 
-            userAddress:signerAddress
+            userAddress:signerAddress,
+            type: 'withdraw'
           });
           toast.success('Hash de la transacción guardado en el backend.');
         } catch (backendError) {
