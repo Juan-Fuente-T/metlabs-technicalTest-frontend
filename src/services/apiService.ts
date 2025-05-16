@@ -21,6 +21,10 @@ interface LoginResponse {
     user: UserResponseData;
 }
 
+interface GoogleLoginPayload { // La nueva interfaz que definimos arriba
+    idToken: string;
+  }
+
 interface TransactionPayload {
     transactionHash: string;
     userAddress: string;
@@ -100,6 +104,27 @@ export const apiService = {
                 throw error;
             }
         },
+        loginWithGoogle: async (idToken: string): Promise<LoginResponse> => { 
+            try {
+              const payload: GoogleLoginPayload = { idToken };
+              const res = await fetch(`${API_BASE_URL}/api/users/google-login`, {
+                method: 'POST',
+                headers: { // Este endpoint no necesita el token propio del backend, porque está creando una sesión
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+              });
+      
+              const data = await res.json();
+              if (!res.ok) {
+                throw new Error(data.message || `Error ${res.status}: Error en el login con Google`);
+              }
+              return data; // Espera que el backend devuelva { message, token, user }
+            } catch (error) {
+              console.error("Error en apiService.auth.loginWithGoogle:", error);
+              throw error;
+            }
+          }
     },
     transactions: {
         add: async (payload: TransactionPayload): Promise<AddTransactionResponse> => {

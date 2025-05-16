@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { apiService } from "@/services/apiService";
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -80,58 +81,144 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div>
-      <h1>Registro de Usuario</h1>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label htmlFor="register-email">Email:</label>
-          <input
-            className='border border-solid border-black'
-            type="email"
-            id="register-email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="register-password">Contraseña:</label>
-          <input
-            className='border border-solid border-black'
-            type="password"
-            id="register-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button
-          className='border border-solid border-black cursor-pointer'
-          type="submit"
-        >
-          Registrarse
-        </button>
-      </form>
-      {/* {message && <p>{message}</p>} */}
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    console.log("Google Login Success:", credentialResponse);
+    const idToken = credentialResponse.credential; // Este es el ID Token JWT de Google
 
-      <h1 style={{marginTop: '20px'}}>Iniciar Sesión</h1>
-      <form onSubmit={handleLogin}>
+    if (idToken) {
+      try {
+        // Se envía este idToken al backend para verificación y para que el backend emita SU PROPIO JWT
+        const backendResponse = await apiService.auth.loginWithGoogle(idToken); 
+        
+        toast.success(backendResponse.message || 'Login con Google exitoso!');
+        if (backendResponse.token && backendResponse.user) {
+          login(backendResponse.token, backendResponse.user); // Usa la función login del AuthContext
+        }
+        setTimeout(() => {
+          router.push('/profile');
+        }, 1500);
+      } catch (error: any) {
+        console.error("Error al procesar login con Google en el backend:", error);
+        toast.error(error.message || 'Error en login con Google.');
+      }
+    } else {
+      toast.error('No se recibió el token de credencial de Google.');
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    console.error("Google Login Failed");
+    toast.error('El inicio de sesión con Google falló.');
+  };
+
+
+ return (
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md space-y-8">
+        
+        {/* Sección de Registro */}
         <div>
-          <label htmlFor="login-email">Email:</label>
-          <input className='border border-solid border-black' type="email" id="login-email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900 mb-6">
+            Crear una Cuenta
+          </h1>
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div>
+              <label htmlFor="register-email" className="block text-sm font-medium text-slate-700">
+                Email:
+              </label>
+              <input
+                id="register-email"
+                name="email" 
+                type="email"
+                autoComplete="email"
+                required
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="register-password" className="block text-sm font-medium text-slate-700">
+                Contraseña:
+              </label>
+              <input
+                id="register-password"
+                name="password" 
+                type="password"
+                autoComplete="new-password"
+                required
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors"
+            >
+              Registrarse
+            </button>
+          </form>
         </div>
-        <div>
-          <label htmlFor="login-password">Contraseña:</label>
-          <input className='border border-solid border-black' type="password" id="login-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
+        {/* Sección de Login */}
+        <div className="pt-8 border-t border-slate-200"> {/* Separador visual */}
+          <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900 mb-6">
+            Iniciar Sesión
+          </h1>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label htmlFor="login-email" className="block text-sm font-medium text-slate-700">Email:</label>
+              <input 
+                id="login-email"
+                name="email"
+                type="email" 
+                autoComplete="email"
+                required
+                value={email} // Asumiendo que usas el mismo estado 'email'
+                onChange={(e) => setEmail(e.target.value)} 
+                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="login-password" className="block text-sm font-medium text-slate-700">Contraseña:</label>
+              <input 
+                id="login-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password} // Asumiendo que usas el mismo estado 'password'
+                onChange={(e) => setPassword(e.target.value)} 
+                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+              />
+            </div>
+            <button 
+              type="submit"
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              Iniciar Sesión
+            </button>
+          </form>
         </div>
-        <button 
-        className='border border-solid border-black cursor-pointer'
-        type="submit"
-        >
-          Iniciar Sesión
-          </button>
-      </form>
+        
+        {/* Sección de Login con Google */}
+        <div className="pt-8 border-t border-slate-200 text-center">
+          <h2 className="text-xl font-semibold text-slate-700 mb-4">
+            O inicia sesión con:
+          </h2>
+          <div className="flex justify-center"> {/* Contenedor para centrar el botón de Google */}
+            <GoogleLogin
+              onSuccess={handleGoogleLoginSuccess}
+              onError={handleGoogleLoginError}
+              // Aquí puedes añadir props para personalizar el botón de Google si quieres
+              theme="outline"
+              size="large"
+            />
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
