@@ -1,5 +1,6 @@
 // src/services/apiService.ts
 import { API_BASE_URL } from "@/utils/constants";
+import { TRANSACTION_TYPES } from "@/utils/constants";
 interface RegisterPayload {
     email: string;
     password: string;
@@ -29,7 +30,8 @@ interface TransactionPayload {
     transactionHash: string;
     userAddress: string;
     // type: string;
-    type: 'deposit' | 'withdraw';
+    type: typeof TRANSACTION_TYPES.DEPOSIT | typeof TRANSACTION_TYPES.WITHDRAW; 
+    // Hay que asegurarse de que el tipo coincida con lo que espera tu backend
 }
 interface TransactionData { // Lo que devuelve el backend para una transacción
     id: string;

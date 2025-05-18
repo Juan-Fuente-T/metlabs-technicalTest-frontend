@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import '@/utils/onboardConfig';
 import METLABS_CONTRACT_ABI from '@/abis/metlabsContractABI.json';
 import { METLABS_CONTRACT_ADDRESS } from '@/utils/constants';
+import { TRANSACTION_TYPES } from '@/utils/constants';
 import { toast } from 'sonner';
 import { apiService } from '@/services/apiService';
 import Sidebar from '@/components/Sidebar';
@@ -146,7 +147,7 @@ export default function ProfilePage() {
           await apiService.transactions.add({
             transactionHash: tx.hash,
             userAddress: signerAddress,
-            type: 'deposit'
+            type: TRANSACTION_TYPES.DEPOSIT
           });
           toast.success('Hash de la transacción guardado en el backend.');
         } catch (backendError) {
@@ -197,7 +198,7 @@ export default function ProfilePage() {
           await apiService.transactions.add({
             transactionHash: tx.hash,
             userAddress: signerAddress,
-            type: 'withdraw'
+            type: TRANSACTION_TYPES.WITHDRAW
           });
           toast.success('Hash de la transacción guardado en el backend.');
         } catch (backendError: unknown) {
