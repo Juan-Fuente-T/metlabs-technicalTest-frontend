@@ -9,7 +9,7 @@ import React, { useState, useEffect, useRef } from 'react'; // Hooks de React
 
 export default function Navbar() {
     const { user, logout, isLoading: authIsLoading } = useAuth();
-    const [{ wallet: onboardWallet, connecting: walletIsConnecting }, connect, disconnect] = useConnectWallet();
+    const [{ connecting: walletIsConnecting }, connect, disconnect] = useConnectWallet();
     const connectedWallets = useWallets();
 
     const router = useRouter();

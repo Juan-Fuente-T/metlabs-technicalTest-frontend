@@ -44,9 +44,9 @@ interface AddTransactionResponse {
 }
 
 
-interface UserProfileData extends UserResponseData {
-    // otros campos del perfil que devuelva el backend
-}
+// interface UserProfileData extends UserResponseData {
+//     // otros campos del perfil que devuelva el backend
+// }
 
 // --- FUNCIÓN PARA OBTENER CABECERAS CON AUTENTICACIÓN ---
 const getAuthHeaders = () => {
@@ -146,7 +146,7 @@ export const apiService = {
         },
     },
     userProfile: {
-        getProfile: async (userId: string): Promise<UserProfileData> => { 
+        getProfile: async (userId: string): Promise<UserResponseData> => { 
             // const token = localStorage.getItem('authToken'); // TRAS IMPLEMENTAR JWT
             try {
                 const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, { 

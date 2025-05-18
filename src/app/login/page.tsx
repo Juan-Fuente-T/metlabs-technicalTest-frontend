@@ -36,10 +36,13 @@ export default function LoginPage() {
       setEmail('');
       setPassword('');
 
-    } catch (error: any) {
-      console.error('Error en la petición de registro:', error);
-      // setMessage(error.message || 'Error de conexión o del servidor al intentar registrar.');
-      toast.error(error.message || 'Error en la petición de registro');
+    } catch (error: unknown) {
+       console.error("Error:", error); 
+       let errorMessage = "Error en el registro."; 
+       if (error instanceof Error) { 
+        errorMessage = error.message; 
+      } 
+      toast.error(errorMessage); 
     }
   };
 
@@ -62,9 +65,13 @@ export default function LoginPage() {
 
       setEmail('');
       setPassword('');
-    } catch (error: any) {
-      console.error('Error en la petición de login:', error);
-      toast.error(error.message || 'Error en la iniciar sesión');
+    } catch (error: unknown) { 
+      console.error("Error:", error); 
+      let errorMessage = "Error en el inicio de sesión."; 
+      if (error instanceof Error) { 
+        errorMessage = error.message; 
+      } 
+      toast.error(errorMessage); 
       // setMessage(error.message || 'Error de conexión o del servidor al intentar iniciar sesión.');
     }
   };
@@ -85,9 +92,13 @@ export default function LoginPage() {
         setTimeout(() => {
           router.push('/profile');
         }, 1500);
-      } catch (error: any) {
-        console.error("Error al procesar login con Google en el backend:", error);
-        toast.error(error.message || 'Error en login con Google.');
+      } catch (error: unknown) { 
+        console.error("Error:", error); 
+        let errorMessage = "Error en el inicio de sesión con Google."; 
+        if (error instanceof Error) {
+           errorMessage = error.message; 
+          } 
+          toast.error(errorMessage); 
       }
     } else {
       toast.error('No se recibió el token de credencial de Google.');
@@ -105,7 +116,7 @@ export default function LoginPage() {
   const secondaryButtonClass = "w-full flex justify-center py-2.5 px-4 border border-slate-800 rounded-lg shadow-sm text-sm font-medium text-slate-800 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 transition-colors";
 
  return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div className=" flex flex-col justify-center items-center bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md space-y-8">
         <div>
           <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900 mb-6">

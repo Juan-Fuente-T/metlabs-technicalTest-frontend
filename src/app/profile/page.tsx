@@ -1,14 +1,3 @@
-// // app/profile/page.tsx o src/app/profile/page.tsx
-// export default function ProfilePage() {
-//   return (
-//     <div>
-//       <h1>Perfil de Usuario</h1>
-//       <p>Aquí se mostrará la información del usuario, wallet, balance, y acciones.</p>
-//       {/* Más adelante aquí irá conexión de wallet, etc. */}
-//     </div>
-//   );
-// }
-
 // Asegúrarse que sea un Client Component si se usa estado y event handlers
 "use client"; // <--- MUY IMPORTANTE para usar hooks como useState y manejar eventos
 
@@ -36,20 +25,19 @@ interface UserProfileData {
 }
 
 export default function ProfilePage() {
-  const { user: authUser, token, logout, isLoading: authIsLoading } = useAuth();
+  const { user: authUser, token, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
 
   // Hooks estándar de web3-onboard
-  const [{ wallet, connecting }, connect, disconnect] = useConnectWallet();
+  const [{ wallet }] = useConnectWallet();
   const connectedWallets = useWallets(); // Array de wallets conectadas (normalmente solo una)
   const primaryWallet = connectedWallets.length > 0 ? connectedWallets[0] : null;
 
   // Estado que guarda el provider y el signer
-  const [ethersProvider, setEthersProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signerAddress, setSignerAddress] = useState<string | null>(null);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
-  const [profileData, setProfileData] = useState<UserProfileData | null>(null); 
+  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
 
   // Inicializa el provider y el signer cuando la wallet se conecta
   useEffect(() => {
@@ -61,7 +49,6 @@ export default function ProfilePage() {
           // El segundo argumento 'any' puede ayudar a evitar problemas si la red no coincide exactamente
           // o si Onboard ya está manejando la red. También puedes pasar el chainId de Sepolia si es necesario.
           const provider = new ethers.BrowserProvider(wallet.provider, 'any');
-          setEthersProvider(provider);
 
           const signer = await provider.getSigner();
           const address = await signer.getAddress();
@@ -80,17 +67,12 @@ export default function ProfilePage() {
             setBalance(balance.toString());
             console.log('Contrato de Metlabs instanciado:', contractInstance);
           }
-
-          console.log('Ethers Provider y Signer configurados.');
-          console.log('Dirección del Signer:', address);
         } catch (error) {
           console.error('Error al configurar Ethers.js:', error);
-          setEthersProvider(null);
           setSignerAddress(null);
           setContract(null);
         }
       } else {
-        setEthersProvider(null);
         setSignerAddress(null);
         setContract(null);
       }
@@ -106,17 +88,13 @@ export default function ProfilePage() {
     // };
 
   }, [wallet, balance]);
-  const handleConnect = async () => {
-    // El segundo parámetro de connect() es opcional, para forzar una wallet específica o auto-seleccionar
-    // Si no se pasa, muestra el modal para que el usuario elija.
-    connect();
-  };
-  
+
+
   // Effect para proteger ruta y cargar datos del perfil del backend
   useEffect(() => {
     if (!authIsLoading && !token) {
       router.push('/login');
-    } else if (token && authUser) { 
+    } else if (token && authUser) {
       const fetchProfile = async () => {
         try {
           // Usa el authUser.id para cargar el perfil, o un endpoint /me
@@ -124,29 +102,30 @@ export default function ProfilePage() {
           // Si no, aquí iría la llamada a apiService.userProfile. getProfile(authUser.id)
           // y luego setProfileData(dataDelBackend);
           // Este ejemplo, simula que profileData se carga o es el mismo que authUser
-          setProfileData({ id: authUser.id, email: authUser.email, walletAddress: signerAddress || ''});
-          
+          setProfileData({ id: authUser.id, email: authUser.email, walletAddress: signerAddress || '' });
+
           // Si la wallet ya está conectada (viene de useConnectWallet), usamos su dirección
-          if(primaryWallet?.accounts[0]?.address) {
+          if (primaryWallet?.accounts[0]?.address) {
             setSignerAddress(primaryWallet.accounts[0].address);
           }
 
-        } catch (error) {
-          toast.error("No se pudo cargar la información del perfil.");
+        } catch (error: unknown) { // Cambia 'any' o la ausencia de tipo por 'unknown'
+          console.error("Error al cargar el perfil:", error);
+          let errorMessage = 'El Hash de transacción no pudo ser guardado en el backend.';
+          if (error instanceof Error) {
+            // Si el error es una instancia de Error se puede acceder a error.message de forma segura.
+            // A veces, los errores de 'fetch' o de librerías ya tienen un 'message' útil.
+            errorMessage = error.message;
+          }
+          toast.error(errorMessage);
+          // Aquí podría redirigirse al usuario a una página de error o mostrar un mensaje
         }
       };
       fetchProfile();
     }
-  }, [token, authIsLoading, authUser, router, signerAddress]); 
+  }, [token, authIsLoading, authUser, router, signerAddress, primaryWallet]);
 
-
-  const handleDisconnect = async () => {
-    if (wallet) {
-      disconnect(wallet);
-    }
-  };
-
-  // EJEMPLO de cómo llamarías a una función del contrato más adelante:
+  // Funciones para manejar el depósito y el retiro
   const handleDeposit = async () => {
     if (contract) {
       try {
@@ -155,18 +134,18 @@ export default function ProfilePage() {
         await tx.wait();
         console.log('Transacción de depósito minada!');
         toast.success('Depósito completado con éxito');
-        // Aquí guardarías tx.hash y la dirección del usuario en tu backend
-        // y actualizarías el balance del usuario en la UI
+        // Atualiza el balance del usuario en la UI
         const newBalance = await contract.balanceForUsers(signerAddress);
         console.log('Nuevo balance en el contrato:', newBalance.toString());
         setBalance(newBalance.toString());
+        // Guarda el tx.hash y la dirección del usuario en el backend
         try {
-          if (!signerAddress) {
+          if (!signerAddress || signerAddress === '') {
             throw new Error('No se pudo obtener la dirección del signer.');
           }
-          await apiService.transactions.add({ 
-            transactionHash: tx.hash, 
-            userAddress:signerAddress,
+          await apiService.transactions.add({
+            transactionHash: tx.hash,
+            userAddress: signerAddress,
             type: 'deposit'
           });
           toast.success('Hash de la transacción guardado en el backend.');
@@ -174,20 +153,28 @@ export default function ProfilePage() {
           console.error("Error guardando hash en backend:", backendError);
           toast.error('EL Hash de transacción no pudo ser guardado en el backend.');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error al 'retitar' (increaseBalance):", error);
         toast.dismiss('deposit-tx'); // Cierra el toast de carga si existe
         let errorMessage = "Error al procesar el depósito.";
-        if (error.message) {
-          errorMessage = error.message;
+        // Intenta extraer mensajes más específicos de errores de ethers.js o RPC
+        if (typeof error === 'object' && error !== null) {
+          // Ethers.js a menudo pone la razón del revert en 'reason' o info en 'data'
+          // o el error mismo puede tener un mensaje útil si es un error de la librería.
+          if ('reason' in error && typeof error.reason === 'string' && error.reason) {
+            errorMessage = error.reason;
+          }
+          // Si no hay 'reason', pero hay 'message' en un objeto 'data'
+          else if ('data' in error && typeof (error as { data?: { message?: string } }).data?.message === 'string' && (error as { data?: { message?: string } }).data?.message) {
+            errorMessage = (error as { data: { message: string } }).data.message;
+          }
+          // Si no, pero el error es una instancia de Error, usamos su 'message'
+          else if (error instanceof Error && error.message) {
+            errorMessage = error.message;
+          }
         }
-        console.log("Error message:", error);
-        if (error.data?.message) {
-          errorMessage = error.data.message;
-        } else if (error.reason) {
-          errorMessage = error.reason;
-        }
-        toast.error(errorMessage);
+        const finalErrorMessage = errorMessage || "Error al procesar el depósito.";
+        toast.error(finalErrorMessage);
       }
     }
   };
@@ -207,46 +194,57 @@ export default function ProfilePage() {
           if (!signerAddress) {
             throw new Error('No se pudo obtener la dirección del signer.');
           }
-          await apiService.transactions.add({ 
-            transactionHash: tx.hash, 
-            userAddress:signerAddress,
+          await apiService.transactions.add({
+            transactionHash: tx.hash,
+            userAddress: signerAddress,
             type: 'withdraw'
           });
           toast.success('Hash de la transacción guardado en el backend.');
-        } catch (backendError) {
+        } catch (backendError: unknown) {
           console.error("Error guardando hash en backend:", backendError);
-          toast.error('EL Hash de transacción no pudo ser guardado en el backend.');
+          let errorMessage = 'El Hash de transacción no pudo ser guardado en el backend.';
+          if (backendError instanceof Error) {
+            errorMessage = backendError.message;
+          }
+          toast.error(errorMessage);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error al 'retitar' (balanceDecrease):", error);
         toast.dismiss('withdraw-tx'); // Cierra el toast de carga si existe
         let errorMessage = "Error al procesar el retiro.";
-        if (error.message) {
-          errorMessage = error.message;
+        if (typeof error === 'object' && error !== null) {
+          // Ethers.js a menudo pone la razón del revert en 'reason' o info en 'data'
+          // o el error mismo puede tener un mensaje útil si es un error de la librería.
+          if ('reason' in error && typeof error.reason === 'string' && error.reason) {
+            errorMessage = error.reason;
+          }
+          // Si no hay 'reason', pero hay 'message' en un objeto 'data'
+          else if ('data' in error && typeof (error as { data?: { message?: string } }).data?.message === 'string' && (error as { data?: { message?: string } }).data?.message) {
+            errorMessage = (error as { data: { message: string } }).data.message;
+          }
+          // Si no, pero el error es una instancia de Error, usamos su 'message'
+          else if (error instanceof Error && error.message) {
+            errorMessage = error.message;
+          }
         }
-        console.log("Error message:", error);
-        if (error.data?.message) {
-          errorMessage = error.data.message;
-        } else if (error.reason) {
-          errorMessage = error.reason;
-        }
-        toast.error(errorMessage);
+        // Mensaje final para el toast
+        const finalErrorMessage = errorMessage || "Error al procesar el retiro.";
+        toast.error(finalErrorMessage);
       }
     }
-  }
-
+  };
   if (authIsLoading) return <p className="text-center mt-10">Cargando sesión...</p>;
   if (!authUser && !token) return null; // Ya que el useEffect redirigirá
 
   return (
-    <div className="flex h-screen"> 
-      <Sidebar 
+    <div className="flex h-screen">
+      <Sidebar
         balance={balance}
-        userAddress={signerAddress || primaryWallet?.accounts[0]?.address || profileData?.walletAddress} 
+        userAddress={signerAddress || primaryWallet?.accounts[0]?.address || profileData?.walletAddress}
         onDeposit={handleDeposit}
         onWithdraw={handleWithdraw}
       />
-      <main className="flex-grow p-6 bg-gray-50 overflow-y-auto"> 
+      <main className="flex-grow p-6 bg-gray-50 overflow-y-auto">
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">Contenido Principal del Perfil</h1>
 
         <div className="bg-white p-6 rounded-lg shadow mb-6">

@@ -35,7 +35,8 @@ export default function Sidebar({ balance, userAddress, onDeposit, onWithdraw }:
   const pathname = usePathname(); // Para saber qué ruta está activa
 
   // Los hooks de web3-onboard por si quieres el botón de conectar/desconectar aquí también
-  const [{ wallet: onboardWallet, connecting: walletIsConnecting }, connect, disconnect] = useConnectWallet();
+  // const [{ wallet: onboardWallet, connecting: walletIsConnecting }, connect, disconnect] = useConnectWallet();
+  const [, ,disconnect] = useConnectWallet();
   const connectedWallets = useWallets();
   const primaryWallet = connectedWallets.length > 0 ? connectedWallets[0] : null;
 
