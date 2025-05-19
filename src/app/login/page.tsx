@@ -112,8 +112,9 @@ export default function LoginPage() {
 
 
   // Clases para los botones
-  const primaryButtonClass = "w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 transition-colors";
-  const secondaryButtonClass = "w-full flex justify-center py-2.5 px-4 border border-slate-800 rounded-lg shadow-sm text-sm font-medium text-slate-800 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 transition-colors";
+  // const primaryButtonClass = "w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 transition-colors";
+  const primaryButtonClass = "w-full flex justify-center py-2 px-6 border border-transparent rounded-xl shadow-sm text-lg font-semibold text-white bg-[#1D1E41] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D1E41] cursor-pointer";
+  const secondaryButtonClass = "w-full flex justify-center py-2 px-6 border border-[#1D1E41]  rounded-xl shadow-sm text-lg font-semibold text-[#1D1E41] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D1E41]  transition-colors cursor-pointer";
 
  return (
     <div className=" flex flex-col justify-center items-center bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
@@ -122,8 +123,7 @@ export default function LoginPage() {
           <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900 mb-6">
             Accede o Crea tu Cuenta
           </h1>
-          {/* El <form> aquí es más para estructura semántica. El envío se maneja por los onClick de los botones. */}
-          {/* Podría ponerse un onSubmit={e => e.preventDefault()} para asegurar que Enter en un campo no haga nada inesperado. */}
+          {/* onSubmit={e => e.preventDefault()} asegura que Enter en un campo no haga nada inesperado. */}
           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
             <div>
               <label htmlFor="auth-email" className="block text-sm font-medium text-slate-700">
@@ -137,11 +137,12 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                // className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full h-12 pt-3 pr-4 pb-3 pl-6 border border-[#1D1E41] rounded-2xl shadow-sm placeholder-[#1D1E41] focus:outline-none focus:ring-[#EE731B] focus:border-[#EE731B] sm:text-sm"
               />
             </div>
             <div>
-              <label htmlFor="auth-password" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="auth-password" className="block text-sm font-medium text-[#1D1E41]">
                 Contraseña:
               </label>
               <input
@@ -152,8 +153,10 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                // className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full py-3 pr-4 pl-6 border border-[#1D1E41] rounded-2xl shadow-sm placeholder-[#1D1E41] focus:outline-none focus:ring-[#EE731B] focus:border-[#EE731B] sm:text-sm"
               />
+              <p className="mt-2 pl-6 text-xs text-[#1D1E41]">La contraseña debe tener al menos 8 caracteres.</p>
             </div>
             
             {/* Contenedor para los botones de acción */}
@@ -166,9 +169,9 @@ export default function LoginPage() {
                 Iniciar Sesión
               </button>
               <button
-                type="button" // Importante: type="button"
+                type="button" 
                 onClick={handleRegister} 
-                className={secondaryButtonClass} // Un estilo diferente para el secundario
+                className={secondaryButtonClass} 
               >
                 Registrarse
               </button>
@@ -177,7 +180,7 @@ export default function LoginPage() {
         </div>
         
         <div className="pt-8 border-t border-slate-200 text-center">
-          <h2 className="text-lg font-semibold text-slate-700 mb-4"> 
+          <h2 className="text-lg font-semibold text-[#1D1E41] mb-4"> 
             O continúa con:
           </h2>
           <div className="flex justify-center">
