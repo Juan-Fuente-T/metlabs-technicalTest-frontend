@@ -115,7 +115,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-[#1D1E41]" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="text-[#1D1E41]">or</span>
+              <span className="bg-white px-2 text-[#1D1E41]">or</span>
             </div>
           </div>
 
