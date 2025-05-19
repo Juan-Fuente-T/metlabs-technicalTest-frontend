@@ -19,6 +19,7 @@ import { TRANSACTION_TYPES } from '@/utils/constants';
 import { toast } from 'sonner';
 import { apiService } from '@/services/apiService';
 import Sidebar from '@/components/Sidebar';
+import UserProfileCard from '@/components/profile/UserProfileCard';
 interface UserProfileData {
   id: string;
   email: string;
@@ -234,6 +235,7 @@ export default function ProfilePage() {
       }
     }
   };
+
   if (authIsLoading) return <p className="text-center mt-10">Cargando sesión...</p>;
   if (!authUser && !token) return null; // Ya que el useEffect redirigirá
 
@@ -245,21 +247,8 @@ export default function ProfilePage() {
         onDeposit={handleDeposit}
         onWithdraw={handleWithdraw}
       />
-      <main className="flex-grow p-6 bg-gray-50 overflow-y-auto">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">Contenido Principal del Perfil</h1>
-
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-3">Mis Datos (del Backend)</h2>
-          <p>Email: {profileData?.email || authUser?.email}</p>
-          <p>User ID: {profileData?.id || authUser?.id}</p>
-          <p>Wallet registrada en perfil: {profileData?.walletAddress || 'No registrada'}</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-3">Otras Acciones o Información</h2>
-          <p>Podría ir más contenido específico de la página de perfil.</p>
-          {/* Ejemplo, un historial de transacciones obtenido del backend */}
-        </div>
+      <main className="flex-grow p-6 overflow-y-auto">
+        <UserProfileCard profileData={profileData} />
       </main>
     </div>
   );

@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation';
 import { apiService } from "@/services/apiService";
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import Image from 'next/image';
+import AuthForm from '@/components/auth/AuthForm';
+import GoogleSignInButton from '@/components/auth/CustomGoogleLoginButton';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -16,6 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   // const [message, setMessage] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handleRegister = async () => {
     // setMessage('');
@@ -24,12 +27,12 @@ export default function LoginPage() {
       const responseData = await apiService.auth.register({ email, password });
       toast.success('Registro exitoso');
       // setMessage(`Usuario registrado con éxito: ${responseData.user?.email || ''} (ID: ${responseData.user?.id || ''})`);
-      
+
       if (responseData.token) {
         // localStorage.setItem('authToken', responseData.token);
         login(responseData.token, responseData.user);
       }
-      
+
       setTimeout(() => {
         router.push('/profile');
       }, 1500); // Redirigir despues de 1.5 segundos
@@ -37,12 +40,12 @@ export default function LoginPage() {
       setPassword('');
 
     } catch (error: unknown) {
-       console.error("Error:", error); 
-       let errorMessage = "Error en el registro."; 
-       if (error instanceof Error) { 
-        errorMessage = error.message; 
-      } 
-      toast.error(errorMessage); 
+      console.error("Error:", error);
+      let errorMessage = "Error en el registro.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -50,10 +53,10 @@ export default function LoginPage() {
     console.log("Iniciando sesión con email:", email, "y password:", password);
     try {
       const responseData = await apiService.auth.login({ email, password });
-      console.log("Respuesta de login:",responseData);
+      console.log("Respuesta de login:", responseData);
       toast.success('Login exitoso');
       // setMessage(`Usuario logueado con éxito: ${responseData.user?.email || ''} (ID: ${responseData.user?.id || ''})`);
-      
+
       if (responseData.token && responseData) {
         // localStorage.setItem('authToken', responseData.token);
         login(responseData.token, responseData.user);
@@ -65,132 +68,75 @@ export default function LoginPage() {
 
       setEmail('');
       setPassword('');
-    } catch (error: unknown) { 
-      console.error("Error:", error); 
-      let errorMessage = "Error en el inicio de sesión."; 
-      if (error instanceof Error) { 
-        errorMessage = error.message; 
-      } 
-      toast.error(errorMessage); 
+    } catch (error: unknown) {
+      console.error("Error:", error);
+      let errorMessage = "Error en el inicio de sesión.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
       // setMessage(error.message || 'Error de conexión o del servidor al intentar iniciar sesión.');
     }
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    console.log("Google Login Success:", credentialResponse);
-    const idToken = credentialResponse.credential; // Este es el ID Token JWT de Google
+  return (
+    <div className=" flex flex-col justify-center items-center  sm:py-10 sm:px-4 sm:px-6 lg:px-8">
+      {/* <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md space-y-8"> */}
+      <div className="flex flex-col justify-center items-center md:flex-row w-full max-w-4xl lg:max-w-5xl bg-white overflow-hidden">
 
-    if (idToken) {
-      try {
-        // Se envía este idToken al backend para verificación y para que el backend emita SU PROPIO JWT
-        const backendResponse = await apiService.auth.loginWithGoogle(idToken); 
-        
-        toast.success(backendResponse.message || 'Login con Google exitoso!');
-        if (backendResponse.token && backendResponse.user) {
-          login(backendResponse.token, backendResponse.user); // Usa la función login del AuthContext
-        }
-        setTimeout(() => {
-          router.push('/profile');
-        }, 1500);
-      } catch (error: unknown) { 
-        console.error("Error:", error); 
-        let errorMessage = "Error en el inicio de sesión con Google."; 
-        if (error instanceof Error) {
-           errorMessage = error.message; 
-          } 
-          toast.error(errorMessage); 
-      }
-    } else {
-      toast.error('No se recibió el token de credencial de Google.');
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    console.error("Google Login Failed");
-    toast.error('El inicio de sesión con Google falló.');
-  };
-
-
-  // Clases para los botones
-  // const primaryButtonClass = "w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 transition-colors";
-  const primaryButtonClass = "w-full flex justify-center py-2 px-6 border border-transparent rounded-xl shadow-sm text-lg font-semibold text-white bg-[#1D1E41] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D1E41] cursor-pointer";
-  const secondaryButtonClass = "w-full flex justify-center py-2 px-6 border border-[#1D1E41]  rounded-xl shadow-sm text-lg font-semibold text-[#1D1E41] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D1E41]  transition-colors cursor-pointer";
-
- return (
-    <div className=" flex flex-col justify-center items-center bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900 mb-6">
-            Accede o Crea tu Cuenta
-          </h1>
-          {/* onSubmit={e => e.preventDefault()} asegura que Enter en un campo no haga nada inesperado. */}
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div>
-              <label htmlFor="auth-email" className="block text-sm font-medium text-slate-700">
-                Email:
-              </label>
-              <input
-                id="auth-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                // className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                className="mt-1 block w-full h-12 pt-3 pr-4 pb-3 pl-6 border border-[#1D1E41] rounded-2xl shadow-sm placeholder-[#1D1E41] focus:outline-none focus:ring-[#EE731B] focus:border-[#EE731B] sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="auth-password" className="block text-sm font-medium text-[#1D1E41]">
-                Contraseña:
-              </label>
-              <input
-                id="auth-password"
-                name="password"
-                type="password"
-                autoComplete="current-password" // O "new-password" si el foco está en registrar
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                // className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                className="mt-1 block w-full py-3 pr-4 pl-6 border border-[#1D1E41] rounded-2xl shadow-sm placeholder-[#1D1E41] focus:outline-none focus:ring-[#EE731B] focus:border-[#EE731B] sm:text-sm"
-              />
-              <p className="mt-2 pl-6 text-xs text-[#1D1E41]">La contraseña debe tener al menos 8 caracteres.</p>
-            </div>
-            
-            {/* Contenedor para los botones de acción */}
-            <div className="space-y-4">
-              <button
-                type="button" // Importante: type="button" para que no haga submit del form por sí mismo
-                onClick={handleLogin} 
-                className={primaryButtonClass}
-              >
-                Iniciar Sesión
-              </button>
-              <button
-                type="button" 
-                onClick={handleRegister} 
-                className={secondaryButtonClass} 
-              >
-                Registrarse
-              </button>
-            </div>
-          </form>
+        {/* Columna Izquierda: Imagen */}
+        <div className="w-5/6 md:block md:w-1/2 lg:w-5/12 flex-shrink-0"> {/* Ancho ajustado */}
+          <Image
+            src="/ImagenPortada.png" 
+            alt="Edificio Metlabs"
+            width={480} 
+            height={532} 
+            // className="object-cover w-full h-full" // h-full para que ocupe la altura del contenedor padre
+            className="object-cover" 
+          />
         </div>
-        
-        <div className="pt-8 border-t border-slate-200 text-center">
-          <h2 className="text-lg font-semibold text-[#1D1E41] mb-4"> 
-            O continúa con:
-          </h2>
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-            />
+
+        {/* Columna Derecha: Contenido de Autenticación */}
+        <div className="w-full md:w-1/2 lg:w-7/12 p-4 sm:p-12 flex flex-col justify-center space-y-6"> {/* Padding y centrado */}
+          <AuthForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            onLoginSubmit={handleLogin}
+            onRegisterSubmit={handleRegister}
+            acceptTerms={acceptTerms} // <--- PASA EL ESTADO DEL CHECKBOX
+            setAcceptTerms={setAcceptTerms} // <--- PASA LA FUNCIÓN PARA ACTUALIZARLO
+          />
+
+          {/* Separador "or" */}
+          <div className="relative"> {/* Eliminado my-6 para que lo controle el space-y-6 del padre */}
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-[#1D1E41]" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="text-[#1D1E41]">or</span>
+            </div>
           </div>
+
+          <GoogleSignInButton />
+
+
+          {/* Enlace para registrarse (TEMPORALMENTE - antes era un botón secundario) */}
+          <p className="mt-4 text-center text-sm text-[#1D1E41]">
+            Si todavía no tienes cuenta,{' '}
+            <button
+              onClick={handleRegister} //SOLO TEMPORALMENTE - CUIDADO
+              className="font-medium text-[#EE731B] hover:underline focus:outline-none"
+            >
+              regístrate ahora
+            </button>
+          </p>
+
         </div>
       </div>
     </div>
   );
 }
+
+
